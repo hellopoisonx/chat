@@ -1,7 +1,7 @@
 # chat
 A simple chatroom written in golang
 # TODO
-- [ ] Command Mode
-- [ ] Broadcast
-- [ ] Exit
+- [x] Command Mode
+- [x] Broadcast
+- [x] Basic functions
 - [ ] Client
