@@ -1,0 +1,5 @@
+#!/usr/bin/sh
+#build for linux
+go build
+#build for windows
+CGO_ENABLED=0 GOOS=windows  GOARCH=amd64  go build
