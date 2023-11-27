@@ -6,8 +6,10 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
+const TTL = 60 // time to live(s)
 type Server struct {
 	Ip        string
 	Port      int
@@ -41,7 +43,7 @@ func (s *Server) ListenMessage() {
 		s.mapLock.Unlock()
 	}
 }
-func (s *Server) ReceiveFromUser(user *User, conn net.Conn) {
+func (s *Server) ReceiveFromUser(user *User, conn net.Conn, isAlive *chan bool) {
 	buf := [4096]byte{}
 	for {
 		n, err := conn.Read(buf[:])
@@ -54,14 +56,25 @@ func (s *Server) ReceiveFromUser(user *User, conn net.Conn) {
 			return
 		}
 		user.HandleMessage(string(buf[:n-1]))
+		*isAlive <- true
 	}
 }
 func (s *Server) Handle(conn net.Conn) {
+	isAlive := make(chan bool)
 	log.Println("Connected")
 	user := NewUser(conn, s)
 	user.Online()
-	go s.ReceiveFromUser(user, conn)
-	select {}
+	go s.ReceiveFromUser(user, conn, &isAlive)
+	for {
+		timer := time.After(time.Second * TTL)
+		select {
+		case <-isAlive:
+			continue
+		case <-timer:
+			user.SendToSelf("EOL")
+			user.Offline()
+		}
+	}
 }
 func startServer(s *Server) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Ip, s.Port))

@@ -10,23 +10,23 @@ const PRIVATE_CMD = 0
 const PUBLIC_CMD = 1
 
 type User struct {
-	Name   string
-	Addr   string
-	C      chan string
-	conn   net.Conn
-	Server *Server
-	Status uint8 //0: oneline 1: offline
+	Name    string
+	Addr    string
+	C       chan string
+	conn    net.Conn
+	Server  *Server
+	Status  uint8 //0: oneline 1: offline
 }
 
 func NewUser(conn net.Conn, server *Server) *User {
 	userAddr := conn.RemoteAddr().String()
 	user := &User{
-		Name:   common.GetName(),
-		Addr:   userAddr,
-		C:      make(chan string),
-		conn:   conn,
-		Server: server,
-		Status: 0,
+		Name:    common.GetName(),
+		Addr:    userAddr,
+		C:       make(chan string),
+		conn:    conn,
+		Server:  server,
+		Status:  0,
 	}
 	go user.ListenMessage()
 	return user
@@ -52,6 +52,7 @@ func (u *User) Offline() {
 	s := u.Server
 	u.Status = 1
 	s.BroadCast(u, "Offline")
+	u.conn.Close()
 }
 func (u *User) SendToSelf(msg string) {
 	u.conn.Write([]byte(msg + "\n> "))
