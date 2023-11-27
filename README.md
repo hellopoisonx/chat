@@ -4,4 +4,6 @@ A simple chatroom written in golang
 - [x] Command Mode
 - [x] Broadcast
 - [x] Basic functions
+- [x] Heartbeat
+- [ ] Private chat
 - [ ] Client
